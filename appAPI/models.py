@@ -11,3 +11,12 @@ class Task(models.Model):
 
     def __str__(self):
         return "%s" % self.task_name
+
+
+class ChartData(models.Model):
+    label = models.CharField(max_length=20)
+    value = models.IntegerField()
+
+    def __str__(self):
+        return "%s" % self.label
+
