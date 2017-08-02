@@ -19,11 +19,13 @@ from rest_framework import  routers
 from appAPI.views import TaskViewSet
 from appAPI.views import ChartDataViewSet
 
-router= routers.DefaultRouter()
+router = routers.DefaultRouter()
 router.register(r'task', TaskViewSet)
 router.register(r'chartData', ChartDataViewSet)
 
+
 urlpatterns = [
     url(r'^', include(router.urls)),
-    url(r'^admin/', admin.site.urls)
+    url(r'^admin/', admin.site.urls),
+
 ]

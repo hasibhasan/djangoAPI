@@ -8,6 +8,9 @@ class TaskSerializer(serializers.ModelSerializer):
         fields = ('id', 'task_name', 'task_description')
 
 class ChartDataSerializer(serializers.ModelSerializer):
+    value = serializers.IntegerField()
     class Meta:
         model = ChartData
-        fields =('label', 'value')
+        fields =('label','value')
+
+
