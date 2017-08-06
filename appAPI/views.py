@@ -9,6 +9,12 @@ from django.db.models import Sum, Avg, Min, Max
 from rest_framework import generics
 from sqlalchemy import create_engine, MetaData, Table
 from sqlalchemy.orm import sessionmaker,mapper
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
 
 
 class TaskViewSet(viewsets.ModelViewSet):
@@ -16,56 +22,37 @@ class TaskViewSet(viewsets.ModelViewSet):
     serializer_class = TaskSerializer
 # Create your views here.
 
-class Bookmarks(object):
-    pass
 
 class ChartDataViewSet(viewsets.ModelViewSet):
     queryset = ChartData.objects.all()
     serializer_class = ChartDataSerializer
 
-    def get_queryset(self):
+
+
+class CustomGet(APIView):
+    def get(self, request, format=None):
         engine = create_engine('mysql+pymysql://root:@localhost/test?charset=utf8', echo=True)
-        metadata = MetaData(engine)
-        moz_bookmarks = Table('teacher_final_data', metadata, autoload=True)
-        mapper(Bookmarks, moz_bookmarks)
-        Session = sessionmaker(bind=engine)
-        session = Session()
-        res = session.query(Bookmarks).filter('inst_name')
-        for result in res:
-            print result['inst_name']
-
-
-
-
-        # conn = engine.connect(close_with_result=True)
-        # result = conn.execute('SELECT * FROM teacher_final_data;')
-        #
-        # # after you iterate over the results, the result and connection get closed
-        # for row in result:
-        #     print(row['inst_name'])
-
-            # or you can explicitly close the result, which also closes the connection
-
-        # Session = sessionmaker(bind=engine)
-        # session = Session()
-        # for student in session.query('inst_name','year'):
-        #     print student.inst_name, student.year
-
-        agg = self.request.query_params.get('agg', None)
+        conn = engine.connect(close_with_result=True)
+        agg = request.GET.get('agg', None)
         if agg == "sum":
-            queryset = ChartData.objects.values('label').annotate(value=Sum('value'))
+            # queryset = ChartData.objects.values('label').annotate(value=Sum('value'))
+            result = conn.execute('SELECT district as label, SUM(salary_basic) as value FROM teacher_final_data group by district;')
         elif agg == "avg":
-            queryset = ChartData.objects.values('label').annotate(value=Avg('value'))
+            # queryset = ChartData.objects.values('label').annotate(value=Avg('value'))
+            result = conn.execute('SELECT district as label, AVG(salary_basic) as value FROM teacher_final_data group by district;')
         elif agg == "min":
-            queryset = ChartData.objects.values('label').annotate(value=Min('value'))
+            # queryset = ChartData.objects.values('label').annotate(value=Min('value'))
+            result = conn.execute(
+                'SELECT district as label, MIN(salary_basic) as value FROM teacher_final_data group by district;')
         elif agg == "max":
-            queryset = ChartData.objects.values('label').annotate(value=Max('value'))
+            # queryset = ChartData.objects.values('label').annotate(value=Max('value'))
+            result = conn.execute(
+                'SELECT district as label, MAX(salary_basic) as value FROM teacher_final_data group by district;')
         else:
-            queryset = ChartData.objects.all()
-        return queryset
-
-
-
-
-
-
+            result =  conn.execute('SELECT district, SUM(salary_basic) as newVal FROM teacher_final_data group by district;');
+        # result = conn.execute(
+        #     'SELECT district as label, SUM(salary_basic) as value FROM teacher_final_data group by district;')
+        a = json.dumps([dict(r) for r in result], cls=DjangoJSONEncoder)
+        b = json.JSONDecoder().decode(a)
+        response = Response(b, status=status.HTTP_200_OK)
+        return response

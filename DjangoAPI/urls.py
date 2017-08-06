@@ -18,14 +18,17 @@ from django.contrib import admin
 from rest_framework import  routers
 from appAPI.views import TaskViewSet
 from appAPI.views import ChartDataViewSet
+from appAPI.views import CustomGet
 
 router = routers.DefaultRouter()
 router.register(r'task', TaskViewSet)
 router.register(r'chartData', ChartDataViewSet)
 
 
+
 urlpatterns = [
     url(r'^', include(router.urls)),
     url(r'^admin/', admin.site.urls),
+    url(r'^custom/get/$', CustomGet.as_view()),
 
 ]
