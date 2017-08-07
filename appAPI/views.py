@@ -36,20 +36,21 @@ class CustomGet(APIView):
         agg = request.GET.get('agg', None)
         if agg == "sum":
             # queryset = ChartData.objects.values('label').annotate(value=Sum('value'))
-            result = conn.execute('SELECT district as label, SUM(salary_basic) as value FROM teacher_final_data group by district;')
+            result = conn.execute('SELECT id,district as label, SUM(salary_basic) as value FROM teacher_final_data group by district order by id;')
         elif agg == "avg":
             # queryset = ChartData.objects.values('label').annotate(value=Avg('value'))
-            result = conn.execute('SELECT district as label, AVG(salary_basic) as value FROM teacher_final_data group by district;')
+            result = conn.execute('SELECT id, district as label, AVG(salary_basic) as value FROM teacher_final_data group by district;')
         elif agg == "min":
             # queryset = ChartData.objects.values('label').annotate(value=Min('value'))
             result = conn.execute(
-                'SELECT district as label, MIN(salary_basic) as value FROM teacher_final_data group by district;')
+                'SELECT id, district as label, MIN(salary_basic) as value FROM teacher_final_data group by district;')
         elif agg == "max":
             # queryset = ChartData.objects.values('label').annotate(value=Max('value'))
             result = conn.execute(
-                'SELECT district as label, MAX(salary_basic) as value FROM teacher_final_data group by district;')
+                'SELECT id, district as label, MAX(salary_basic) as value FROM teacher_final_data group by district;')
         else:
-            result =  conn.execute('SELECT district, SUM(salary_basic) as newVal FROM teacher_final_data group by district;');
+            result = conn.execute(
+                'SELECT  id, district as label, SUM(salary_basic) as value FROM teacher_final_data group by district;')
         # result = conn.execute(
         #     'SELECT district as label, SUM(salary_basic) as value FROM teacher_final_data group by district;')
         a = json.dumps([dict(r) for r in result], cls=DjangoJSONEncoder)
